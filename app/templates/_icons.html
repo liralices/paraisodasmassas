@@ -1,0 +1,29 @@
+{% macro espiga() %}
+<svg class="espiga" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+    <path d="M12 2v20" stroke-linecap="round"/>
+    <path d="M12 5c-2 0-3.2 1-3.2 2S10 9 12 9" stroke-linecap="round"/>
+    <path d="M12 5c2 0 3.2 1 3.2 2S14 9 12 9" stroke-linecap="round"/>
+    <path d="M12 9c-2 0-3.2 1-3.2 2S10 13 12 13" stroke-linecap="round"/>
+    <path d="M12 9c2 0 3.2 1 3.2 2S14 13 12 13" stroke-linecap="round"/>
+    <path d="M12 13c-2 0-3.2 1-3.2 2S10 17 12 17" stroke-linecap="round"/>
+    <path d="M12 13c2 0 3.2 1 3.2 2S14 17 12 17" stroke-linecap="round"/>
+</svg>
+{% endmacro %}
+
+{% macro icone(nome) %}
+{% if nome == "visao-geral" %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12l9-8 9 8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10v9a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1v-9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+{% elif nome == "vendas" %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2l2.4 11.2a1.5 1.5 0 001.5 1.3h8.2a1.5 1.5 0 001.5-1.2L20.5 8H6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+{% elif nome == "estoque" %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4-9-4z" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 7v10l9 4 9-4V7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 11v10" stroke-linecap="round"/></svg>
+{% elif nome == "caixa" %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 11h18" /><circle cx="12" cy="15" r="1.6"/></svg>
+{% elif nome == "clientes" %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 19c0-3.3 2.9-5.8 6.5-5.8s6.5 2.5 6.5 5.8" stroke-linecap="round"/><path d="M16.5 4.8a3.2 3.2 0 010 6.4" stroke-linecap="round"/><path d="M18.5 13.6c2.4.6 4 2.6 4 5.4" stroke-linecap="round"/></svg>
+{% elif nome == "produtos" %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="8" width="17" height="12" rx="1.5"/><path d="M3.5 12h17" /><path d="M8 8V6.5A2.5 2.5 0 0110.5 4h3A2.5 2.5 0 0116 6.5V8" stroke-linecap="round"/></svg>
+{% elif nome == "ficha" %}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 3h9l4 4v14a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 11h6M9 15h6M9 7h3" stroke-linecap="round"/></svg>
+{% endif %}
+{% endmacro %}

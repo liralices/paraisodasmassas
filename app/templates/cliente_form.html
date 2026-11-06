@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Novo cliente{% endblock %}
+{% block trilha %}Cadastros › Clientes{% endblock %}
+{% block titulo_pagina %}Novo cliente{% endblock %}
+
+{% block content %}
+<form method="post" novalidate>
+    <div class="campo">
+        <label for="nome">Nome</label>
+        <input type="text" id="nome" name="nome" required>
+    </div>
+
+    <div class="campo">
+        <label for="telefone">Telefone</label>
+        <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-9999">
+    </div>
+
+    <div class="campo">
+        <label for="localidade">Localidade</label>
+        <input type="text" id="localidade" name="localidade" placeholder="São Paulo - SP">
+    </div>
+
+    <div class="campo">
+        <label for="cpf_cnpj">CPF/CNPJ</label>
+        <input type="text" id="cpf_cnpj" name="cpf_cnpj">
+    </div>
+
+    <button type="submit" class="botao-primario">Cadastrar</button>
+</form>
+{% endblock %}

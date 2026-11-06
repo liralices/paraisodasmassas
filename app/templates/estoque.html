@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Estoque{% endblock %}
+{% block trilha %}Estoque{% endblock %}
+{% block titulo_pagina %}Estoque de insumos{% endblock %}
+
+{% block content %}
+<div class="barra-acoes">
+    <a class="botao botao-primario" href="{{ url_for('estoque.novo_insumo') }}">+ Novo insumo</a>
+</div>
+
+<div class="tabela-wrap">
+    <table>
+        <caption class="sr-only">Lista de insumos e níveis de estoque</caption>
+        <thead>
+            <tr>
+                <th scope="col">Insumo</th>
+                <th scope="col">Quantidade atual</th>
+                <th scope="col">Mínimo</th>
+                <th scope="col">Atualizar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in insumos %}
+            <tr id="insumo-{{ i.id }}" class="{{ 'alerta' if i.estoque_baixo else '' }}">
+                <td>{{ i.nome }}</td>
+                <td>{{ i.quantidade_atual }} {{ i.unidade }}</td>
+                <td>{{ i.quantidade_minima }} {{ i.unidade }}</td>
+                <td>
+                    <form method="post" action="{{ url_for('estoque.ajustar_estoque', insumo_id=i.id) }}" class="barra-acoes" style="margin:0;">
+                        <label for="qtd-{{ i.id }}" class="sr-only">Nova quantidade de {{ i.nome }}</label>
+                        <input type="number" id="qtd-{{ i.id }}" name="quantidade_atual" step="0.01" value="{{ i.quantidade_atual }}" style="max-width:110px;">
+                        <button type="submit">Salvar</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="vazio">Nenhum insumo cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/estoque.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Ficha técnica{% endblock %}
+{% block trilha %}Produção{% endblock %}
+{% block titulo_pagina %}Ficha técnica{% endblock %}
+
+{% block content %}
+<p>Defina quanto de cada insumo é consumido na produção de um produto. Isso é o que conecta o estoque à produção do dia a dia.</p>
+
+{% if not insumos %}
+<div class="card">
+    <p class="vazio">Cadastre ao menos um <a href="{{ url_for('estoque.novo_insumo') }}">insumo</a> antes de montar fichas técnicas.</p>
+</div>
+{% endif %}
+
+{% for p in produtos %}
+<article class="card" style="margin-bottom:1.25rem;">
+    <h3>{{ p.nome }}</h3>
+
+    {% if p.ficha_tecnica %}
+    <div class="tabela-wrap">
+        <table>
+            <caption class="sr-only">Insumos utilizados em {{ p.nome }}</caption>
+            <thead>
+                <tr><th scope="col">Insumo</th><th scope="col">Quantidade utilizada</th><th scope="col"></th></tr>
+            </thead>
+            <tbody>
+                {% for item in p.ficha_tecnica %}
+                <tr>
+                    <td>{{ item.insumo.nome }}</td>
+                    <td>{{ item.quantidade_utilizada }} {{ item.insumo.unidade }}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('ficha.remover_item', item_id=item.id) }}">
+                            <button type="submit" class="botao-secundario">Remover</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="vazio">Nenhum insumo associado ainda.</p>
+    {% endif %}
+
+    {% if insumos %}
+    <form method="post" action="{{ url_for('ficha.adicionar_item', produto_id=p.id) }}" class="barra-acoes">
+        <div class="campo" style="margin-bottom:0;">
+            <label for="insumo-{{ p.id }}" class="sr-only">Insumo</label>
+            <select id="insumo-{{ p.id }}" name="insumo_id" required>
+                {% for i in insumos %}
+                <option value="{{ i.id }}">{{ i.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="campo" style="margin-bottom:0;">
+            <label for="qtd-{{ p.id }}" class="sr-only">Quantidade</label>
+            <input type="number" id="qtd-{{ p.id }}" name="quantidade_utilizada" step="0.001" min="0" placeholder="Quantidade" required style="max-width:140px;">
+        </div>
+        <button type="submit">Adicionar</button>
+    </form>
+    {% endif %}
+</article>
+{% else %}
+<p class="vazio">Cadastre produtos para montar a ficha técnica de cada um.</p>
+{% endfor %}
+{% endblock %}

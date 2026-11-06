@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Clientes{% endblock %}
+{% block trilha %}Cadastros{% endblock %}
+{% block titulo_pagina %}Clientes{% endblock %}
+
+{% block content %}
+<div class="barra-acoes">
+    <form method="get" class="busca-form" role="search">
+        <label for="busca" class="sr-only">Buscar por nome</label>
+        <input type="search" id="busca" name="busca" placeholder="Nome, telefone, CPF/CNPJ..." value="{{ busca }}">
+        <button type="submit">Buscar</button>
+    </form>
+    <a class="botao botao-primario" href="{{ url_for('clientes.novo_cliente') }}">+ Novo cliente</a>
+</div>
+
+<div class="tabela-wrap">
+    <table>
+        <caption class="sr-only">Lista de clientes cadastrados</caption>
+        <thead>
+            <tr>
+                <th scope="col">Nome</th>
+                <th scope="col">Telefone</th>
+                <th scope="col">Localidade</th>
+                <th scope="col">CPF/CNPJ</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in clientes %}
+            <tr>
+                <td>{{ c.nome }}</td>
+                <td>{{ c.telefone or "-" }}</td>
+                <td>{{ c.localidade or "-" }}</td>
+                <td>{{ c.cpf_cnpj or "-" }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="vazio">Nenhum cliente encontrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

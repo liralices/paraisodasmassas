@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Produtos{% endblock %}
+{% block trilha %}Cadastros{% endblock %}
+{% block titulo_pagina %}Produtos{% endblock %}
+
+{% block content %}
+<div class="barra-acoes">
+    <a class="botao botao-primario" href="{{ url_for('vendas.novo_produto') }}">+ Novo produto</a>
+</div>
+
+<div class="tabela-wrap">
+    <table>
+        <caption class="sr-only">Lista completa de produtos cadastrados</caption>
+        <thead>
+            <tr><th scope="col">Nome</th><th scope="col">Categoria</th><th scope="col">Preço</th></tr>
+        </thead>
+        <tbody>
+            {% for p in produtos %}
+            <tr>
+                <td>{{ p.nome }}</td>
+                <td>{{ p.categoria or "-" }}</td>
+                <td>R$ {{ "%.2f"|format(p.preco) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="vazio">Nenhum produto cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

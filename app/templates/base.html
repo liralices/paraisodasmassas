@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Giro{% endblock %} · Paraíso das Massas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% import "_icons.html" as icons %}
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="marca" href="{{ url_for('vendas.index') }}">
+                {{ icons.espiga() }}
+                <span class="marca-texto">
+                    <span class="marca-nome">Giro</span>
+                    <span class="marca-sub">Paraíso das Massas</span>
+                </span>
+            </a>
+
+            <ul class="nav-principal">
+                <li><a href="{{ url_for('vendas.index') }}" class="{{ 'ativo' if request.endpoint == 'vendas.index' else '' }}">{{ icons.icone('visao-geral') }}<span>Visão geral</span></a></li>
+                <li><a href="{{ url_for('vendas.registrar_venda') }}" class="{{ 'ativo' if request.endpoint == 'vendas.registrar_venda' else '' }}">{{ icons.icone('vendas') }}<span>Vendas</span></a></li>
+                <li><a href="{{ url_for('caixa.ver_caixa') }}" class="{{ 'ativo' if request.endpoint and request.endpoint.startswith('caixa.') else '' }}">{{ icons.icone('caixa') }}<span>Caixa</span></a></li>
+                <li><a href="{{ url_for('estoque.listar_estoque') }}" class="{{ 'ativo' if request.endpoint and request.endpoint.startswith('estoque.') else '' }}">{{ icons.icone('estoque') }}<span>Estoque</span></a></li>
+                <li><a href="{{ url_for('ficha.listar_fichas') }}" class="{{ 'ativo' if request.endpoint and request.endpoint.startswith('ficha.') else '' }}">{{ icons.icone('ficha') }}<span>Ficha técnica</span></a></li>
+                <li><a href="{{ url_for('vendas.listar_produtos') }}" class="{{ 'ativo' if request.endpoint == 'vendas.listar_produtos' or request.endpoint == 'vendas.novo_produto' else '' }}">{{ icons.icone('produtos') }}<span>Produtos</span></a></li>
+                <li><a href="{{ url_for('clientes.listar_clientes') }}" class="{{ 'ativo' if request.endpoint and request.endpoint.startswith('clientes.') else '' }}">{{ icons.icone('clientes') }}<span>Clientes</span></a></li>
+            </ul>
+
+            <p class="sidebar-rodape">Giro — Projeto Integrador em Computação II</p>
+        </aside>
+
+        <div class="conteudo">
+            <div class="topo">
+                <p class="trilha">{% block trilha %}Giro{% endblock %}</p>
+                <h1>{% block titulo_pagina %}{% endblock %}</h1>
+            </div>
+
+            <main class="miolo">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <ul class="flash" role="status">
+                            {% for msg in messages %}<li>{{ msg }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% import "_icons.html" as icons %}
+{% block title %}Visão geral{% endblock %}
+{% block trilha %}Painel{% endblock %}
+{% block titulo_pagina %}Visão geral{% endblock %}
+
+{% block content %}
+<section class="kpis" aria-label="Indicadores principais">
+    <div class="kpi">
+        <p class="kpi-rotulo">Produtos cadastrados</p>
+        <p class="kpi-valor">{{ produtos|length }}</p>
+    </div>
+    <div class="kpi acento-caixa">
+        <p class="kpi-rotulo">Situação do caixa hoje</p>
+        <p class="kpi-valor">{{ "Aberto" if caixa_aberto else "Fechado" }}</p>
+    </div>
+    <div class="kpi acento-estoque">
+        <p class="kpi-rotulo">Insumos em alerta</p>
+        <p class="kpi-valor">{{ insumos_em_alerta }}</p>
+    </div>
+</section>
+
+<div class="cards">
+    <article class="card">
+        <h3>Produtos mais vendidos</h3>
+        <canvas id="grafico-mais-vendidos" role="img" aria-label="Gráfico de barras dos produtos mais vendidos"></canvas>
+    </article>
+
+    <article class="card">
+        <h3>Faturamento por dia</h3>
+        <canvas id="grafico-faturamento" role="img" aria-label="Gráfico de linha do faturamento diário"></canvas>
+    </article>
+
+    <article class="card">
+        <h3>Alertas de estoque</h3>
+        <ul id="lista-alertas-estoque" aria-live="polite"></ul>
+    </article>
+</div>
+
+<div class="divisor-trigo">{{ icons.espiga() }}<span>Produtos cadastrados</span>{{ icons.espiga() }}</div>
+
+<div class="tabela-wrap">
+    <table>
+        <caption class="sr-only">Lista de produtos cadastrados</caption>
+        <thead>
+            <tr><th scope="col">Nome</th><th scope="col">Categoria</th><th scope="col">Preço</th></tr>
+        </thead>
+        <tbody>
+            {% for p in produtos %}
+            <tr>
+                <td>{{ p.nome }}</td>
+                <td>{{ p.categoria or "-" }}</td>
+                <td>R$ {{ "%.2f"|format(p.preco) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="vazio">Nenhum produto cadastrado ainda. <a href="{{ url_for('vendas.novo_produto') }}">Cadastrar o primeiro</a>.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

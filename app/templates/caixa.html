@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Caixa{% endblock %}
+{% block trilha %}Financeiro{% endblock %}
+{% block titulo_pagina %}Fechamento de caixa{% endblock %}
+
+{% block content %}
+{% if caixa %}
+<article class="card">
+    <h3>Caixa aberto <span class="badge badge-aberto">Aberto</span></h3>
+    <p>Aberto em {{ caixa.data_abertura.strftime("%d/%m/%Y %H:%M") }} com valor inicial de R$ {{ "%.2f"|format(caixa.valor_abertura) }}.</p>
+    <p>Vendas registradas no período: R$ {{ "%.2f"|format(caixa.total_vendas_periodo()) }}</p>
+    <p><strong>Valor esperado em caixa: R$ {{ "%.2f"|format(caixa.valor_esperado) }}</strong></p>
+
+    <form method="post" action="{{ url_for('caixa.fechar_caixa', caixa_id=caixa.id) }}">
+        <div class="campo">
+            <label for="valor_contado">Valor contado ao fechar (R$)</label>
+            <input type="number" id="valor_contado" name="valor_contado" step="0.01" min="0" required>
+        </div>
+        <div class="campo">
+            <label for="observacao">Observação (opcional)</label>
+            <input type="text" id="observacao" name="observacao" placeholder="Ex: sangria para troco, diferença justificada...">
+        </div>
+        <button type="submit" class="botao-primario">Fechar caixa</button>
+    </form>
+</article>
+{% else %}
+<article class="card">
+    <h3>Nenhum caixa aberto <span class="badge badge-fechado">Fechado</span></h3>
+    <form method="post" action="{{ url_for('caixa.abrir_caixa') }}">
+        <div class="campo">
+            <label for="valor_abertura">Valor inicial em caixa (R$)</label>
+            <input type="number" id="valor_abertura" name="valor_abertura" step="0.01" min="0" required>
+        </div>
+        <button type="submit" class="botao-primario">Abrir caixa</button>
+    </form>
+</article>
+{% endif %}
+
+<div class="divisor-trigo"><span>Histórico de fechamentos</span></div>
+
+<div class="tabela-wrap">
+    <table>
+        <caption class="sr-only">Histórico de caixas fechados</caption>
+        <thead>
+            <tr>
+                <th scope="col">Abertura</th>
+                <th scope="col">Fechamento</th>
+                <th scope="col">Esperado</th>
+                <th scope="col">Contado</th>
+                <th scope="col">Diferença</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in historico %}
+            <tr class="{{ 'alerta' if c.diferenca and c.diferenca|abs > 0.01 else '' }}">
+                <td>{{ c.data_abertura.strftime("%d/%m %H:%M") }}</td>
+                <td>{{ c.data_fechamento.strftime("%d/%m %H:%M") }}</td>
+                <td>R$ {{ "%.2f"|format(c.valor_esperado) }}</td>
+                <td>R$ {{ "%.2f"|format(c.valor_contado) }}</td>
+                <td>R$ {{ "%.2f"|format(c.diferenca) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="vazio">Nenhum fechamento registrado ainda.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
