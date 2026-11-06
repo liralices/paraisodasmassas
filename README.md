@@ -35,10 +35,8 @@ o que entrou no escopo do Giro:
 | Ficha técnica | Vínculo insumo × produto (quanto cada produto consome) | ✅ Implementado |
 | Financeiro / Raio-X | Fechamento de caixa (abertura, vendas do período, valor esperado × contado) | ✅ Implementado |
 | Relatórios Hiper | Dashboard com produto mais vendido, faturamento por dia e alertas | ✅ Implementado |
-| Fiscal (NF-e/cupom fiscal) | — | ⏸️ Fora de escopo — exige homologação e certificado digital reais |
-| Meios de pagamento (maquininha) | — | ⏸️ Fora de escopo — exige integração com adquirente real |
-| Balança integrada | — | ⏸️ Fora de escopo — depende de hardware específico |
-| Loja online / Catálogo digital | — | ⏸️ Fora de escopo — não é o problema identificado na visita |
+| Fiscal (NF-e/cupom fiscal) | — | ⏸️ Fora de escopo — exige homologação e certificado digital |
+| Meios de pagamento (maquininha) | — | ⏸️ Fora de escopo — exige integração com as redes de maquininhas |
 
 ## Requisitos da ementa atendidos
 
