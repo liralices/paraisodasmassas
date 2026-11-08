@@ -36,23 +36,44 @@ fetch("/api/faturamento-por-dia")
         });
     });
 
-// Lista de alertas de estoque baixo
+// Lista exclusiva de alertas de estoque
 fetch("/api/estoque-baixo")
     .then((res) => res.json())
-    .then((insumos) => {
+    .then((alertas) => {
         const lista = document.getElementById("lista-alertas-estoque");
-        const comAlerta = insumos.filter((i) => i.estoque_baixo);
 
-        if (!comAlerta.length) {
+        if (!alertas.length) {
             const item = document.createElement("li");
-            item.textContent = "Nenhum insumo abaixo do mínimo no momento.";
+            item.className = "alerta-vazio";
+            item.textContent = "Nenhum item em alerta de compra no momento.";
             lista.appendChild(item);
             return;
         }
 
-        comAlerta.forEach((i) => {
+        alertas.forEach((alerta) => {
             const item = document.createElement("li");
-            item.textContent = `${i.nome}: ${i.quantidade_atual}${i.unidade} (mínimo: ${i.quantidade_minima}${i.unidade})`;
+            item.className = "alerta-item";
+
+            const label = document.createElement("strong");
+            label.textContent = `${alerta.tipo}: ${alerta.nome}`;
+
+            const meta = document.createElement("span");
+            meta.textContent = `${alerta.quantidade_atual} ${alerta.unidade} / mínimo ${alerta.quantidade_minima} ${alerta.unidade}`;
+
+            const fornecedor = document.createElement("small");
+            fornecedor.textContent = `Fornecedor: ${alerta.fornecedor}`;
+
+            const detalhe = document.createElement("small");
+            detalhe.textContent = `Obs.: ${alerta.observacao}`;
+
+            if (alerta.dado_faltante) {
+                item.classList.add("alerta-falta-dado");
+            }
+
+            item.appendChild(label);
+            item.appendChild(meta);
+            item.appendChild(fornecedor);
+            item.appendChild(detalhe);
             lista.appendChild(item);
         });
     });

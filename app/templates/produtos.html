@@ -12,7 +12,7 @@
     <table>
         <caption class="sr-only">Lista completa de produtos cadastrados</caption>
         <thead>
-            <tr><th scope="col">Nome</th><th scope="col">Categoria</th><th scope="col">Preço</th></tr>
+            <tr><th scope="col">Nome</th><th scope="col">Categoria</th><th scope="col">Preço</th><th scope="col">Ações</th></tr>
         </thead>
         <tbody>
             {% for p in produtos %}
@@ -20,9 +20,17 @@
                 <td>{{ p.nome }}</td>
                 <td>{{ p.categoria or "-" }}</td>
                 <td>R$ {{ "%.2f"|format(p.preco) }}</td>
+                <td>
+                    <div class="acoes-inline">
+                        <a class="acao-btn edit" href="{{ url_for('vendas.editar_produto', produto_id=p.id) }}" aria-label="Editar {{ p.nome }}">✏️</a>
+                        <form method="post" action="{{ url_for('vendas.excluir_produto', produto_id=p.id) }}" class="form-excluir-inline" onsubmit="return confirm('Deseja remover o produto {{ p.nome }}?');">
+                            <button type="submit" class="acao-btn delete" aria-label="Excluir {{ p.nome }}">🗑️</button>
+                        </form>
+                    </div>
+                </td>
             </tr>
             {% else %}
-            <tr><td colspan="3" class="vazio">Nenhum produto cadastrado.</td></tr>
+            <tr><td colspan="4" class="vazio">Nenhum produto cadastrado.</td></tr>
             {% endfor %}
         </tbody>
     </table>

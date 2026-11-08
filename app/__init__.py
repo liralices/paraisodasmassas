@@ -9,14 +9,61 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 
 
+def _migrar_vendas_antigas():
+    """Converte o antigo formato de venda (1 produto por venda) para o novo
+    formato de carrinho (uma venda com vários itens em ItemVenda)."""
+    inspector = db.inspect(db.engine)
+    tabelas = set(inspector.get_table_names())
+    if "venda" not in tabelas or "item_venda" in tabelas:
+        return
+
+    colunas_venda = {column["name"] for column in inspector.get_columns("venda")}
+    if "produto_id" not in colunas_venda:
+        return
+
+    from app.models import Venda, ItemVenda
+
+    db.session.execute(text("ALTER TABLE venda RENAME TO venda_legado"))
+    db.session.commit()
+
+    Venda.__table__.create(db.engine)
+    ItemVenda.__table__.create(db.engine)
+
+    vendas_antigas = db.session.execute(
+        text("SELECT id, produto_id, quantidade, data_hora FROM venda_legado")
+    ).fetchall()
+    for venda in vendas_antigas:
+        produto = db.session.execute(
+            text("SELECT preco FROM produto WHERE id = :id"), {"id": venda.produto_id}
+        ).fetchone()
+        preco = produto.preco if produto else 0
+        db.session.execute(
+            text("INSERT INTO venda (id, cliente_id, data_hora) VALUES (:id, NULL, :data_hora)"),
+            {"id": venda.id, "data_hora": venda.data_hora},
+        )
+        db.session.execute(
+            text(
+                "INSERT INTO item_venda (venda_id, produto_id, quantidade, preco_unitario) "
+                "VALUES (:venda_id, :produto_id, :quantidade, :preco)"
+            ),
+            {"venda_id": venda.id, "produto_id": venda.produto_id, "quantidade": venda.quantidade, "preco": preco},
+        )
+    db.session.commit()
+
+    db.session.execute(text("DROP TABLE venda_legado"))
+    db.session.commit()
+
+
 def ensure_schema(app):
     with app.app_context():
+        from app.models import Fornecedor, Produto, Insumo, Usuario, Cliente, Venda, ItemVenda, FichaTecnica, FechamentoCaixa
+
+        _migrar_vendas_antigas()
+
         inspector = db.inspect(db.engine)
         tables = set(inspector.get_table_names())
 
-        from app.models import Fornecedor, Produto, Insumo, Usuario, Cliente, Venda, FichaTecnica, FechamentoCaixa
-
-        models = [Fornecedor, Produto, Insumo, Usuario, Cliente, Venda, FichaTecnica, FechamentoCaixa]
+        models = [Fornecedor, Produto, Insumo, Usuario, Cliente, Venda, ItemVenda, FichaTecnica, FechamentoCaixa]
 
         for model in models:
             table_name = model.__table__.name

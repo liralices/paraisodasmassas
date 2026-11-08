@@ -1,46 +1,118 @@
 {% extends "base.html" %}
-{% block title %}Registrar venda{% endblock %}
+{% block title %}Vendas{% endblock %}
 {% block trilha %}Vendas{% endblock %}
-{% block titulo_pagina %}Registrar venda{% endblock %}
+{% block titulo_pagina %}Vendas{% endblock %}
 
 {% block content %}
-<form method="post" novalidate>
-    <div class="campo">
-        <label for="produto_id">Produto</label>
-        <select id="produto_id" name="produto_id" required>
-            {% for p in produtos %}
-            <option value="{{ p.id }}">{{ p.nome }} — R$ {{ "%.2f"|format(p.preco) }}</option>
-            {% endfor %}
-        </select>
-    </div>
+<div class="barra-acoes">
+    <button type="button" class="botao botao-primario" id="btn-nova-venda">+ Nova venda</button>
+</div>
 
-    <div class="campo">
-        <label for="quantidade">Quantidade</label>
-        <input type="number" id="quantidade" name="quantidade" min="1" value="1" required>
-    </div>
+<dialog id="modal-nova-venda" class="modal-venda">
+    <form method="post" id="form-nova-venda">
+        <div class="modal-cabecalho">
+            <h2>Nova venda</h2>
+            <button type="button" class="botao-fechar" id="btn-fechar-modal" aria-label="Fechar">&times;</button>
+        </div>
 
-    <button type="submit" class="botao-primario">Registrar venda</button>
-</form>
+        <div class="campo">
+            <label for="cliente_id">Cliente (opcional)</label>
+            <select id="cliente_id" name="cliente_id">
+                <option value="">Cliente não identificado</option>
+                {% for c in clientes %}
+                <option value="{{ c.id }}">{{ c.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="campo-duplo">
+            <div class="campo">
+                <label for="forma_pagamento">Forma de pagamento</label>
+                <select id="forma_pagamento" name="forma_pagamento">
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="PIX">PIX</option>
+                    <option value="Crédito">Crédito</option>
+                    <option value="Débito">Débito</option>
+                    <option value="Ticket">Ticket</option>
+                </select>
+            </div>
+            <div class="campo" id="campo-valor-recebido">
+                <label for="valor_recebido">Valor recebido</label>
+                <input type="number" id="valor_recebido" name="valor_recebido" step="0.01" min="0" placeholder="0,00">
+            </div>
+        </div>
+
+        <div class="campo" id="campo-troco">
+            <label for="troco">Troco</label>
+            <input type="hidden" id="troco" name="troco" value="0">
+            <input type="text" id="troco_exibicao" value="R$ 0,00" readonly>
+        </div>
+
+        <div class="tabela-wrap">
+            <table>
+                <caption class="sr-only">Itens da venda</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Produto</th>
+                        <th scope="col">Quantidade</th>
+                        <th scope="col">Subtotal</th>
+                        <th scope="col"><span class="sr-only">Remover</span></th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-itens-venda"></tbody>
+            </table>
+        </div>
+
+        <button type="button" class="botao botao-secundario" id="btn-add-item">+ Adicionar item</button>
+
+        <p class="total-venda">Total: <strong id="total-venda-valor">R$ 0,00</strong></p>
+
+        <div class="modal-acoes">
+            <button type="button" class="botao botao-secundario" id="btn-cancelar-venda">Cancelar</button>
+            <button type="submit" class="botao botao-primario">Finalizar venda</button>
+        </div>
+    </form>
+</dialog>
 
 <h2>Últimas vendas</h2>
 <div class="tabela-wrap">
     <table>
         <caption class="sr-only">Últimas 20 vendas registradas</caption>
         <thead>
-            <tr><th scope="col">Produto</th><th scope="col">Quantidade</th><th scope="col">Total</th><th scope="col">Data/hora</th></tr>
+            <tr><th scope="col">Cliente</th><th scope="col">Itens</th><th scope="col">Pagamento</th><th scope="col">Total</th><th scope="col">Data/hora</th><th scope="col">Ações</th></tr>
         </thead>
         <tbody>
             {% for v in vendas %}
             <tr>
-                <td>{{ v.produto.nome }}</td>
-                <td>{{ v.quantidade }}</td>
+                <td>{{ v.cliente.nome if v.cliente else "Não identificado" }}</td>
+                <td>{% for item in v.itens %}{{ item.produto.nome }} ({{ item.quantidade }}){% if not loop.last %}, {% endif %}{% endfor %}</td>
+                <td>{{ v.forma_pagamento }}{% if v.troco and v.forma_pagamento == 'Dinheiro' %} · troco R$ {{ '%.2f'|format(v.troco) }}{% endif %}</td>
                 <td>R$ {{ "%.2f"|format(v.total) }}</td>
                 <td>{{ v.data_hora.strftime("%d/%m/%Y %H:%M") }}</td>
+                <td>
+                    <div class="acoes-inline">
+                        <a class="acao-btn edit" href="{{ url_for('vendas.editar_venda', venda_id=v.id) }}" aria-label="Editar venda {{ v.id }}">✏️</a>
+                        <form method="post" action="{{ url_for('vendas.excluir_venda', venda_id=v.id) }}" class="form-excluir-inline" onsubmit="return confirm('Deseja remover esta venda?');">
+                            <button type="submit" class="acao-btn delete" aria-label="Excluir venda {{ v.id }}">🗑️</button>
+                        </form>
+                    </div>
+                </td>
             </tr>
             {% else %}
-            <tr><td colspan="4" class="vazio">Nenhuma venda registrada ainda.</td></tr>
+            <tr><td colspan="6" class="vazio">Nenhuma venda registrada ainda.</td></tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const PRODUTOS_VENDA = [
+        {% for p in produtos %}
+        { id: {{ p.id }}, nome: {{ p.nome|tojson }}, preco: {{ p.preco }} },
+        {% endfor %}
+    ];
+</script>
+<script src="{{ url_for('static', filename='js/vendas.js') }}"></script>
 {% endblock %}

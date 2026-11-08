@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Editar fechamento{% endblock %}
+{% block trilha %}Financeiro › Caixa{% endblock %}
+{% block titulo_pagina %}Editar fechamento de caixa{% endblock %}
+
+{% block content %}
+<article class="card">
+    <p><strong>Aberto em:</strong> {{ caixa.data_abertura.strftime("%d/%m/%Y %H:%M") }}</p>
+    <form method="post">
+        <div class="campo">
+            <label for="valor_contado">Valor contado (R$)</label>
+            <input type="number" id="valor_contado" name="valor_contado" step="0.01" min="0" value="{{ caixa.valor_contado or 0 }}" required>
+        </div>
+
+        <div class="campo">
+            <label for="observacao">Observação</label>
+            <input type="text" id="observacao" name="observacao" value="{{ caixa.observacao or '' }}" placeholder="Ex: diferença justificada...">
+        </div>
+
+        <div class="modal-acoes">
+            <a class="botao botao-secundario" href="{{ url_for('caixa.ver_caixa') }}">Cancelar</a>
+            <button type="submit" class="botao botao-primario">Salvar alterações</button>
+        </div>
+    </form>
+</article>
+{% endblock %}

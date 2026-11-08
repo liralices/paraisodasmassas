@@ -44,11 +44,15 @@ def novo_insumo():
 def novo_produto_direto():
     fornecedores = Fornecedor.query.order_by(Fornecedor.nome).all()
     if request.method == "POST":
+        codigo_barras = (request.form.get("codigo_barras") or "").strip()
+        if not codigo_barras:
+            codigo_barras = Produto.gerar_codigo_barras()
+
         produto = Produto(
             nome=request.form["nome"],
             categoria=request.form.get("categoria"),
             preco=request.form["preco"],
-            codigo_barras=request.form.get("codigo_barras") or None,
+            codigo_barras=codigo_barras,
             tipo_estoque="venda_direta",
             unidade=request.form.get("unidade", "un"),
             estoque_atual=request.form.get("estoque_atual", 0),

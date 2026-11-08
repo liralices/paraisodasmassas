@@ -44,3 +44,26 @@ def fechar_caixa(caixa_id):
     db.session.commit()
     flash("Caixa fechado com sucesso.")
     return redirect(url_for("caixa.ver_caixa"))
+
+
+@caixa_bp.route("/caixa/<int:caixa_id>/editar", methods=["GET", "POST"])
+@login_required
+def editar_caixa(caixa_id):
+    caixa = FechamentoCaixa.query.get_or_404(caixa_id)
+    if request.method == "POST":
+        caixa.valor_contado = request.form.get("valor_contado")
+        caixa.observacao = request.form.get("observacao")
+        db.session.commit()
+        flash("Caixa atualizado com sucesso.")
+        return redirect(url_for("caixa.ver_caixa"))
+    return render_template("caixa_editar.html", caixa=caixa)
+
+
+@caixa_bp.route("/caixa/<int:caixa_id>/excluir", methods=["POST"])
+@login_required
+def excluir_caixa(caixa_id):
+    caixa = FechamentoCaixa.query.get_or_404(caixa_id)
+    db.session.delete(caixa)
+    db.session.commit()
+    flash("Fechamento removido com sucesso.")
+    return redirect(url_for("caixa.ver_caixa"))

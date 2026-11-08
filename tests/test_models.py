@@ -1,6 +1,6 @@
 import pytest
 from app import create_app, db
-from app.models import Produto, Venda, Insumo, Cliente, FechamentoCaixa, FichaTecnica, Usuario, Fornecedor
+from app.models import Produto, Venda, ItemVenda, Insumo, Cliente, FechamentoCaixa, FichaTecnica, Usuario, Fornecedor
 
 
 @pytest.fixture
@@ -25,11 +25,52 @@ def test_venda_calcula_total(app):
     db.session.add(produto)
     db.session.commit()
 
-    venda = Venda(produto_id=produto.id, quantidade=10)
+    venda = Venda()
+    venda.itens.append(ItemVenda(produto_id=produto.id, quantidade=10, preco_unitario=produto.preco))
     db.session.add(venda)
     db.session.commit()
 
     assert venda.total == 7.5
+
+
+def test_venda_guarda_forma_pagamento_e_troco(app):
+    produto = Produto(nome="Pão francês", categoria="pao", preco=0.75)
+    db.session.add(produto)
+    db.session.commit()
+
+    venda = Venda(forma_pagamento="Dinheiro", valor_recebido=20.0, troco=5.0)
+    venda.itens.append(ItemVenda(produto_id=produto.id, quantidade=10, preco_unitario=produto.preco))
+    db.session.add(venda)
+    db.session.commit()
+
+    assert venda.forma_pagamento == "Dinheiro"
+    assert venda.valor_recebido == 20.0
+    assert venda.troco == 5.0
+
+
+def test_venda_com_varios_itens_e_cliente(app):
+    pao = Produto(nome="Pão francês", categoria="pao", preco=0.75)
+    sonho = Produto(nome="Sonho", categoria="doce", preco=5.5)
+    cliente = Cliente(nome="Eliana")
+    db.session.add_all([pao, sonho, cliente])
+    db.session.commit()
+
+    venda = Venda(cliente_id=cliente.id)
+    venda.itens.append(ItemVenda(produto_id=pao.id, quantidade=4, preco_unitario=pao.preco))
+    venda.itens.append(ItemVenda(produto_id=sonho.id, quantidade=2, preco_unitario=sonho.preco))
+    db.session.add(venda)
+    db.session.commit()
+
+    assert venda.total == 14.0
+    assert venda.cliente.nome == "Eliana"
+
+
+def test_produto_gera_codigo_de_barras_automaticamente(app):
+    produto = Produto(nome="Pão francês", categoria="pao", preco=0.75)
+
+    assert produto.codigo_barras is not None
+    assert produto.codigo_barras.isdigit() is True
+    assert len(produto.codigo_barras) == 13
 
 
 def test_produto_to_dict(app):
@@ -44,6 +85,55 @@ def test_cliente_to_dict(app):
     dados = cliente.to_dict()
     assert dados["nome"] == "Eliana"
     assert dados["localidade"] == "São Paulo - SP"
+
+
+def test_editar_cliente_e_produto_por_rotas(app):
+    usuario = Usuario(nome="Admin", email="admin@teste.com", cargo="Administrador", senha="123456")
+    cliente = Cliente(nome="Cliente antigo", telefone="(11) 1111-1111", localidade="São Paulo")
+    produto = Produto(nome="Pão antigo", categoria="pao", preco=1.0, codigo_barras="7891111111111")
+    db.session.add_all([usuario, cliente, produto])
+    db.session.commit()
+
+    cliente_app = app.test_client()
+    login_response = cliente_app.post("/login", data={"email": "admin@teste.com", "senha": "123456"}, follow_redirects=True)
+    assert login_response.status_code == 200
+
+    response_cliente = cliente_app.post(
+        f"/clientes/{cliente.id}/editar",
+        data={"nome": "Cliente novo", "telefone": "(11) 2222-2222", "localidade": "Campinas", "cpf_cnpj": "123"},
+        follow_redirects=True,
+    )
+    response_produto = cliente_app.post(
+        f"/produtos/{produto.id}/editar",
+        data={"nome": "Pão novo", "categoria": "pao", "preco": "7.50", "codigo_barras": "7892222222222", "tipo_estoque": "producao", "unidade": "un", "estoque_atual": "10", "estoque_minimo": "2", "fornecedor_id": ""},
+        follow_redirects=True,
+    )
+
+    assert response_cliente.status_code == 200
+    assert response_produto.status_code == 200
+    assert Cliente.query.get(cliente.id).nome == "Cliente novo"
+    assert Produto.query.get(produto.id).nome == "Pão novo"
+    assert Produto.query.get(produto.id).preco == 7.5
+
+
+def test_excluir_cliente_e_produto_por_rotas(app):
+    usuario = Usuario(nome="Admin", email="admin@delete.com", cargo="Administrador", senha="123456")
+    cliente = Cliente(nome="Cliente para remover", telefone="(11) 1234-5678", localidade="São Paulo")
+    produto = Produto(nome="Produto para remover", categoria="doce", preco=3.5, codigo_barras="7893333333333")
+    db.session.add_all([usuario, cliente, produto])
+    db.session.commit()
+
+    cliente_app = app.test_client()
+    login_response = cliente_app.post("/login", data={"email": "admin@delete.com", "senha": "123456"}, follow_redirects=True)
+    assert login_response.status_code == 200
+
+    response_cliente = cliente_app.post(f"/clientes/{cliente.id}/excluir", follow_redirects=True)
+    response_produto = cliente_app.post(f"/produtos/{produto.id}/excluir", follow_redirects=True)
+
+    assert response_cliente.status_code == 200
+    assert response_produto.status_code == 200
+    assert Cliente.query.filter_by(id=cliente.id).first() is None
+    assert Produto.query.filter_by(id=produto.id).first() is None
 
 
 def test_fechamento_caixa_sem_venda(app):
@@ -63,7 +153,8 @@ def test_fechamento_caixa_com_venda(app):
     db.session.add(caixa)
     db.session.commit()
 
-    venda = Venda(produto_id=produto.id, quantidade=3)
+    venda = Venda()
+    venda.itens.append(ItemVenda(produto_id=produto.id, quantidade=3, preco_unitario=produto.preco))
     db.session.add(venda)
     db.session.commit()
 

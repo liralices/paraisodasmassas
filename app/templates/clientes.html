@@ -22,6 +22,7 @@
                 <th scope="col">Telefone</th>
                 <th scope="col">Localidade</th>
                 <th scope="col">CPF/CNPJ</th>
+                <th scope="col">Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -31,9 +32,17 @@
                 <td>{{ c.telefone or "-" }}</td>
                 <td>{{ c.localidade or "-" }}</td>
                 <td>{{ c.cpf_cnpj or "-" }}</td>
+                <td>
+                    <div class="acoes-inline">
+                        <a class="acao-btn edit" href="{{ url_for('clientes.editar_cliente', cliente_id=c.id) }}" aria-label="Editar {{ c.nome }}">✏️</a>
+                        <form method="post" action="{{ url_for('clientes.excluir_cliente', cliente_id=c.id) }}" class="form-excluir-inline" onsubmit="return confirm('Deseja remover o cliente {{ c.nome }}?');">
+                            <button type="submit" class="acao-btn delete" aria-label="Excluir {{ c.nome }}">🗑️</button>
+                        </form>
+                    </div>
+                </td>
             </tr>
             {% else %}
-            <tr><td colspan="4" class="vazio">Nenhum cliente encontrado.</td></tr>
+            <tr><td colspan="5" class="vazio">Nenhum cliente encontrado.</td></tr>
             {% endfor %}
         </tbody>
     </table>

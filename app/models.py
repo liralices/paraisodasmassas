@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -83,14 +84,25 @@ class Produto(db.Model):
     nome = db.Column(db.String(100), nullable=False)
     categoria = db.Column(db.String(50))  # pão, doce, salgado, bebida...
     preco = db.Column(db.Numeric(10, 2), nullable=False)
-    codigo_barras = db.Column(db.String(80), unique=True, nullable=True)
+    codigo_barras = db.Column(db.String(80), unique=True, nullable=False)
     tipo_estoque = db.Column(db.String(30), default="producao")
     unidade = db.Column(db.String(20), default="un")
     estoque_atual = db.Column(db.Numeric(10, 2), default=0)
     estoque_minimo = db.Column(db.Numeric(10, 2), default=0)
     fornecedor_id = db.Column(db.Integer, db.ForeignKey("fornecedor.id"))
 
-    vendas = db.relationship("Venda", backref="produto", lazy=True)
+    def __init__(self, **kwargs):
+        codigo_barras = kwargs.get("codigo_barras")
+        if codigo_barras is None or not str(codigo_barras).strip():
+            kwargs["codigo_barras"] = self.gerar_codigo_barras()
+        super().__init__(**kwargs)
+
+    @staticmethod
+    def gerar_codigo_barras():
+        while True:
+            codigo = "789" + "".join(str(random.randint(0, 9)) for _ in range(10))
+            if not db.session.query(Produto).filter_by(codigo_barras=codigo).first():
+                return codigo
 
     @property
     def estoque_baixo(self):
@@ -109,27 +121,65 @@ class Produto(db.Model):
             "unidade": self.unidade,
             "estoque_atual": float(self.estoque_atual or 0),
             "estoque_minimo": float(self.estoque_minimo or 0),
+            "estoque_baixo": self.estoque_baixo,
             "fornecedor_id": self.fornecedor_id,
         }
 
 
 class Venda(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    produto_id = db.Column(db.Integer, db.ForeignKey("produto.id"), nullable=False)
-    quantidade = db.Column(db.Integer, nullable=False)
+    cliente_id = db.Column(db.Integer, db.ForeignKey("cliente.id"), nullable=True)
+    forma_pagamento = db.Column(db.String(30), default="Dinheiro")
+    valor_recebido = db.Column(db.Numeric(10, 2), default=0)
+    troco = db.Column(db.Numeric(10, 2), default=0)
     data_hora = db.Column(db.DateTime, default=datetime.utcnow)
+
+    cliente = db.relationship("Cliente")
+    itens = db.relationship("ItemVenda", backref="venda", lazy=True, cascade="all, delete-orphan")
 
     @property
     def total(self):
-        return float(self.produto.preco) * self.quantidade
+        return sum(item.subtotal for item in self.itens)
+
+    @property
+    def troco_calculado(self):
+        valor_recebido = float(self.valor_recebido or 0)
+        return max(valor_recebido - float(self.total), 0.0)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "cliente": self.cliente.nome if self.cliente else None,
+            "forma_pagamento": self.forma_pagamento,
+            "valor_recebido": float(self.valor_recebido or 0),
+            "troco": float(self.troco or 0),
+            "total": self.total,
+            "data_hora": self.data_hora.isoformat(),
+            "itens": [item.to_dict() for item in self.itens],
+        }
+
+
+class ItemVenda(db.Model):
+    """Um item (produto + quantidade) dentro de uma venda."""
+    id = db.Column(db.Integer, primary_key=True)
+    venda_id = db.Column(db.Integer, db.ForeignKey("venda.id"), nullable=False)
+    produto_id = db.Column(db.Integer, db.ForeignKey("produto.id"), nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    preco_unitario = db.Column(db.Numeric(10, 2), nullable=False)
+
+    produto = db.relationship("Produto")
+
+    @property
+    def subtotal(self):
+        return float(self.preco_unitario) * self.quantidade
 
     def to_dict(self):
         return {
             "id": self.id,
             "produto": self.produto.nome,
             "quantidade": self.quantidade,
-            "total": self.total,
-            "data_hora": self.data_hora.isoformat(),
+            "preco_unitario": float(self.preco_unitario),
+            "subtotal": self.subtotal,
         }
 
 

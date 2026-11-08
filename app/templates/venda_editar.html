@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Editar venda{% endblock %}
+{% block trilha %}Vendas{% endblock %}
+{% block titulo_pagina %}Editar venda{% endblock %}
+
+{% block content %}
+<form method="post">
+    <div class="campo">
+        <label for="cliente_id">Cliente</label>
+        <select id="cliente_id" name="cliente_id">
+            <option value="">Cliente não identificado</option>
+            {% for cliente in clientes %}
+            <option value="{{ cliente.id }}" {{ 'selected' if venda.cliente_id == cliente.id else '' }}>{{ cliente.nome }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="campo-duplo">
+        <div class="campo">
+            <label for="forma_pagamento">Forma de pagamento</label>
+            <select id="forma_pagamento" name="forma_pagamento">
+                {% set metodos = ['Dinheiro', 'PIX', 'Crédito', 'Débito', 'Ticket'] %}
+                {% for metodo in metodos %}
+                <option value="{{ metodo }}" {{ 'selected' if venda.forma_pagamento == metodo else '' }}>{{ metodo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="campo">
+            <label for="valor_recebido">Valor recebido</label>
+            <input type="number" id="valor_recebido" name="valor_recebido" step="0.01" min="0" value="{{ venda.valor_recebido or 0 }}">
+        </div>
+    </div>
+
+    <div class="campo">
+        <label for="troco">Troco</label>
+        <input type="hidden" id="troco" name="troco" value="{{ venda.troco or 0 }}">
+        <input type="text" id="troco_exibicao" value="R$ {{ '%.2f'|format(venda.troco or 0) }}" readonly>
+    </div>
+
+    <div class="tabela-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Quantidade</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in venda.itens %}
+                <tr>
+                    <td>{{ item.produto.nome }}</td>
+                    <td><input type="number" name="quantidade" value="{{ item.quantidade }}" min="1"></td>
+                    <td>R$ {{ "%.2f"|format(item.subtotal) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="3" class="vazio">Nenhum item nesta venda.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal-acoes">
+        <a class="botao botao-secundario" href="{{ url_for('vendas.registrar_venda') }}">Cancelar</a>
+        <button type="submit" class="botao botao-primario">Salvar alterações</button>
+    </div>
+</form>
+{% endblock %}
