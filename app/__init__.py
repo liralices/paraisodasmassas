@@ -1,10 +1,39 @@
 from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
+from sqlalchemy.dialects import sqlite
 
 
 db = SQLAlchemy()
 login_manager = LoginManager()
+
+
+def ensure_schema(app):
+    with app.app_context():
+        inspector = db.inspect(db.engine)
+        tables = set(inspector.get_table_names())
+
+        from app.models import Fornecedor, Produto, Insumo, Usuario, Cliente, Venda, FichaTecnica, FechamentoCaixa
+
+        models = [Fornecedor, Produto, Insumo, Usuario, Cliente, Venda, FichaTecnica, FechamentoCaixa]
+
+        for model in models:
+            table_name = model.__table__.name
+            if table_name not in tables:
+                db.create_all()
+                return
+
+            existing_columns = {column["name"] for column in inspector.get_columns(table_name)}
+            for column in model.__table__.columns:
+                if column.name not in existing_columns:
+                    column_sql = column.type.compile(dialect=sqlite.dialect())
+                    nullable_sql = " NOT NULL" if not column.nullable and not column.default and not column.primary_key else ""
+                    default_sql = ""
+                    if column.default is not None and not callable(column.default.arg):
+                        default_sql = f" DEFAULT {column.default.arg}"
+                    db.session.execute(text(f'ALTER TABLE "{table_name}" ADD COLUMN "{column.name}" {column_sql}{nullable_sql}{default_sql}'))
+            db.session.commit()
 
 
 @login_manager.user_loader
@@ -46,6 +75,6 @@ def create_app(config=None):
     app.register_blueprint(usuarios_bp)
 
     with app.app_context():
-        db.create_all()
+        ensure_schema(app)
 
     return app

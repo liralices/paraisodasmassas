@@ -44,7 +44,8 @@
                     <form method="post" action="{{ url_for('usuarios.atualizar_permissao', usuario_id=usuario.id) }}" class="inline-form">
                         <select name="cargo">
                             <option value="Atendente" {% if usuario.cargo == 'Atendente' %}selected{% endif %}>Atendente</option>
-                            <option value="Administrador" {% if usuario.is_admin %}selected{% endif %}>Administrador</option>
+                            <option value="Administrador" {% if usuario.cargo == 'Administrador' %}selected{% endif %}>Administrador</option>
+                            <option value="Super administrador" {% if usuario.is_super_admin %}selected{% endif %}>Super administrador</option>
                         </select>
                         <button type="submit" class="botao-secundario">Salvar</button>
                     </form>

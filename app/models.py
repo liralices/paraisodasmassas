@@ -12,8 +12,14 @@ class Usuario(db.Model, UserMixin):
     cargo = db.Column(db.String(80), default="Atendente")
 
     @property
+    def is_super_admin(self):
+        cargo = str(self.cargo or "").strip().lower()
+        return cargo in {"super administrador", "super-administrador", "super admin", "super-admin", "superadmin"}
+
+    @property
     def is_admin(self):
-        return str(self.cargo or "").strip().lower() in {"administrador", "admin"}
+        cargo = str(self.cargo or "").strip().lower()
+        return self.is_super_admin or cargo in {"administrador", "admin"}
 
     def __init__(self, **kwargs):
         senha = kwargs.pop("senha", None)
@@ -36,13 +42,61 @@ class Usuario(db.Model, UserMixin):
         }
 
 
+class Fornecedor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(120), nullable=False)
+    contato = db.Column(db.String(120), nullable=False)
+    telefone = db.Column(db.String(30))
+    email = db.Column(db.String(120))
+    cnpj = db.Column(db.String(30))
+    observacao = db.Column(db.Text)
+
+    produtos = db.relationship("Produto", backref="fornecedor", lazy=True)
+    insumos = db.relationship("Insumo", backref="fornecedor", lazy=True)
+
+    @property
+    def itens_baixos(self):
+        itens = []
+        for insumo in self.insumos:
+            if insumo.estoque_baixo:
+                itens.append({"tipo": "Matéria-prima", "nome": insumo.nome, "quantidade": insumo.quantidade_atual, "minimo": insumo.quantidade_minima, "unidade": insumo.unidade})
+        for produto in self.produtos:
+            if produto.tipo_estoque == "venda_direta" and produto.estoque_baixo:
+                itens.append({"tipo": "Venda direta", "nome": produto.nome, "quantidade": produto.estoque_atual, "minimo": produto.estoque_minimo, "unidade": produto.unidade})
+        return itens
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "nome": self.nome,
+            "contato": self.contato,
+            "telefone": self.telefone,
+            "email": self.email,
+            "cnpj": self.cnpj,
+            "observacao": self.observacao,
+            "itens_baixos": self.itens_baixos,
+        }
+
+
 class Produto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     categoria = db.Column(db.String(50))  # pão, doce, salgado, bebida...
     preco = db.Column(db.Numeric(10, 2), nullable=False)
+    codigo_barras = db.Column(db.String(80), unique=True, nullable=True)
+    tipo_estoque = db.Column(db.String(30), default="producao")
+    unidade = db.Column(db.String(20), default="un")
+    estoque_atual = db.Column(db.Numeric(10, 2), default=0)
+    estoque_minimo = db.Column(db.Numeric(10, 2), default=0)
+    fornecedor_id = db.Column(db.Integer, db.ForeignKey("fornecedor.id"))
 
     vendas = db.relationship("Venda", backref="produto", lazy=True)
+
+    @property
+    def estoque_baixo(self):
+        if self.tipo_estoque != "venda_direta":
+            return False
+        return float(self.estoque_atual or 0) <= float(self.estoque_minimo or 0)
 
     def to_dict(self):
         return {
@@ -50,6 +104,12 @@ class Produto(db.Model):
             "nome": self.nome,
             "categoria": self.categoria,
             "preco": float(self.preco),
+            "codigo_barras": self.codigo_barras,
+            "tipo_estoque": self.tipo_estoque,
+            "unidade": self.unidade,
+            "estoque_atual": float(self.estoque_atual or 0),
+            "estoque_minimo": float(self.estoque_minimo or 0),
+            "fornecedor_id": self.fornecedor_id,
         }
 
 
@@ -96,10 +156,11 @@ class Insumo(db.Model):
     unidade = db.Column(db.String(20), default="kg")
     quantidade_atual = db.Column(db.Numeric(10, 2), nullable=False, default=0)
     quantidade_minima = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+    fornecedor_id = db.Column(db.Integer, db.ForeignKey("fornecedor.id"))
 
     @property
     def estoque_baixo(self):
-        return self.quantidade_atual <= self.quantidade_minima
+        return float(self.quantidade_atual or 0) <= float(self.quantidade_minima or 0)
 
     def to_dict(self):
         return {
@@ -109,6 +170,7 @@ class Insumo(db.Model):
             "quantidade_atual": float(self.quantidade_atual),
             "quantidade_minima": float(self.quantidade_minima),
             "estoque_baixo": self.estoque_baixo,
+            "fornecedor_id": self.fornecedor_id,
         }
 
 

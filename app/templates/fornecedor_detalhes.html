@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Fornecedor{% endblock %}
+{% block trilha %}Estoque › Fornecedores{% endblock %}
+{% block titulo_pagina %}{{ fornecedor.nome }}{% endblock %}
+
+{% block content %}
+<div class="card-detalhe">
+    <p><strong>Contato principal:</strong> {{ fornecedor.contato }}</p>
+    <p><strong>Telefone:</strong> {{ fornecedor.telefone or '—' }}</p>
+    <p><strong>E-mail:</strong> {{ fornecedor.email or '—' }}</p>
+    <p><strong>CNPJ:</strong> {{ fornecedor.cnpj or '—' }}</p>
+    <p><strong>Observações:</strong> {{ fornecedor.observacao or 'Sem observações.' }}</p>
+</div>
+
+<section class="painel">
+    <h2 class="subtitulo">Itens com estoque baixo</h2>
+    {% if fornecedor.itens_baixos %}
+    <ul class="lista-alerta">
+        {% for item in fornecedor.itens_baixos %}
+        <li>
+            <strong>{{ item.tipo }}</strong> — {{ item.nome }}
+            <span>({{ item.quantidade }} {{ item.unidade }} / mínimo {{ item.minimo }} {{ item.unidade }})</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="vazio">Nenhum item em alerta de compra neste fornecedor.</p>
+    {% endif %}
+</section>
+
+<div class="barra-acoes">
+    <a class="botao botao-secundario" href="{{ url_for('estoque.listar_fornecedores') }}">Voltar para fornecedores</a>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Fornecedores{% endblock %}
+{% block trilha %}Estoque{% endblock %}
+{% block titulo_pagina %}Fornecedores{% endblock %}
+
+{% block content %}
+<div class="barra-acoes">
+    <a class="botao botao-primario" href="{{ url_for('estoque.novo_fornecedor') }}">+ Novo fornecedor</a>
+</div>
+
+<div class="lista-cards">
+    {% for fornecedor in fornecedores %}
+    <article class="card">
+        <h3>{{ fornecedor.nome }}</h3>
+        <p><strong>Contato:</strong> {{ fornecedor.contato }}</p>
+        <p><strong>Telefone:</strong> {{ fornecedor.telefone or '—' }}</p>
+        <p><strong>E-mail:</strong> {{ fornecedor.email or '—' }}</p>
+        <p><strong>CNPJ:</strong> {{ fornecedor.cnpj or '—' }}</p>
+        <a class="botao botao-secundario" href="{{ url_for('estoque.detalhe_fornecedor', fornecedor_id=fornecedor.id) }}">Ver detalhes</a>
+    </article>
+    {% else %}
+    <p class="vazio">Nenhum fornecedor cadastrado.</p>
+    {% endfor %}
+</div>
+{% endblock %}

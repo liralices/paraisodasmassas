@@ -1,44 +1,105 @@
 {% extends "base.html" %}
 {% block title %}Estoque{% endblock %}
 {% block trilha %}Estoque{% endblock %}
-{% block titulo_pagina %}Estoque de insumos{% endblock %}
+{% block titulo_pagina %}Estoque e fornecedores{% endblock %}
 
 {% block content %}
 <div class="barra-acoes">
     <a class="botao botao-primario" href="{{ url_for('estoque.novo_insumo') }}">+ Novo insumo</a>
+    <a class="botao botao-secundario" href="{{ url_for('estoque.novo_produto_direto') }}">+ Produto para venda direta</a>
+    <a class="botao botao-secundario" href="{{ url_for('estoque.novo_fornecedor') }}">+ Novo fornecedor</a>
 </div>
 
-<div class="tabela-wrap">
-    <table>
-        <caption class="sr-only">Lista de insumos e níveis de estoque</caption>
-        <thead>
-            <tr>
-                <th scope="col">Insumo</th>
-                <th scope="col">Quantidade atual</th>
-                <th scope="col">Mínimo</th>
-                <th scope="col">Atualizar</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for i in insumos %}
-            <tr id="insumo-{{ i.id }}" class="{{ 'alerta' if i.estoque_baixo else '' }}">
-                <td>{{ i.nome }}</td>
-                <td>{{ i.quantidade_atual }} {{ i.unidade }}</td>
-                <td>{{ i.quantidade_minima }} {{ i.unidade }}</td>
-                <td>
-                    <form method="post" action="{{ url_for('estoque.ajustar_estoque', insumo_id=i.id) }}" class="barra-acoes" style="margin:0;">
-                        <label for="qtd-{{ i.id }}" class="sr-only">Nova quantidade de {{ i.nome }}</label>
-                        <input type="number" id="qtd-{{ i.id }}" name="quantidade_atual" step="0.01" value="{{ i.quantidade_atual }}" style="max-width:110px;">
-                        <button type="submit">Salvar</button>
-                    </form>
-                </td>
-            </tr>
-            {% else %}
-            <tr><td colspan="4" class="vazio">Nenhum insumo cadastrado.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+<section class="painel">
+    <h2 class="subtitulo">Matérias-primas para produção</h2>
+    <div class="tabela-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Insumo</th>
+                    <th scope="col">Fornecedor</th>
+                    <th scope="col">Quantidade atual</th>
+                    <th scope="col">Mínimo</th>
+                    <th scope="col">Atualizar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in insumos %}
+                <tr id="insumo-{{ i.id }}" class="{{ 'alerta' if i.estoque_baixo else '' }}">
+                    <td>{{ i.nome }}</td>
+                    <td>{{ i.fornecedor.nome if i.fornecedor else 'Sem fornecedor' }}</td>
+                    <td>{{ i.quantidade_atual }} {{ i.unidade }}</td>
+                    <td>{{ i.quantidade_minima }} {{ i.unidade }}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('estoque.ajustar_estoque', insumo_id=i.id) }}" class="barra-acoes" style="margin:0;">
+                            <label for="qtd-{{ i.id }}" class="sr-only">Nova quantidade de {{ i.nome }}</label>
+                            <input type="number" id="qtd-{{ i.id }}" name="quantidade_atual" step="0.01" value="{{ i.quantidade_atual }}" style="max-width:110px;">
+                            <button type="submit">Salvar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="vazio">Nenhum insumo cadastrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="painel">
+    <h2 class="subtitulo">Produtos vendidos diretamente</h2>
+    <div class="tabela-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Produto</th>
+                    <th scope="col">Código de barras</th>
+                    <th scope="col">Estoque</th>
+                    <th scope="col">Mínimo</th>
+                    <th scope="col">Fornecedor</th>
+                    <th scope="col">Atualizar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in produtos_venda_direta %}
+                <tr class="{{ 'alerta' if p.estoque_baixo else '' }}">
+                    <td>{{ p.nome }}</td>
+                    <td>{{ p.codigo_barras or '—' }}</td>
+                    <td>{{ p.estoque_atual }} {{ p.unidade }}</td>
+                    <td>{{ p.estoque_minimo }} {{ p.unidade }}</td>
+                    <td>{{ p.fornecedor.nome if p.fornecedor else 'Sem fornecedor' }}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('estoque.ajustar_estoque_produto', produto_id=p.id) }}" class="barra-acoes" style="margin:0;">
+                            <label for="estoque-{{ p.id }}" class="sr-only">Nova quantidade de {{ p.nome }}</label>
+                            <input type="number" id="estoque-{{ p.id }}" name="estoque_atual" step="0.01" value="{{ p.estoque_atual }}" style="max-width:110px;">
+                            <button type="submit">Salvar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="vazio">Nenhum produto direto cadastrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="painel">
+    <h2 class="subtitulo">Fornecedores</h2>
+    <div class="lista-cards">
+        {% for fornecedor in fornecedores %}
+        <article class="card">
+            <h3>{{ fornecedor.nome }}</h3>
+            <p><strong>Contato:</strong> {{ fornecedor.contato }}</p>
+            <p><strong>Telefone:</strong> {{ fornecedor.telefone or '—' }}</p>
+            <p><strong>Email:</strong> {{ fornecedor.email or '—' }}</p>
+            <a class="botao botao-secundario" href="{{ url_for('estoque.detalhe_fornecedor', fornecedor_id=fornecedor.id) }}">Ver contatos</a>
+        </article>
+        {% else %}
+        <p class="vazio">Nenhum fornecedor cadastrado.</p>
+        {% endfor %}
+    </div>
+</section>
 {% endblock %}
 
 {% block scripts %}

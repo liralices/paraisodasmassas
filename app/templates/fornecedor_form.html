@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Novo fornecedor{% endblock %}
+{% block trilha %}Estoque{% endblock %}
+{% block titulo_pagina %}Novo fornecedor{% endblock %}
+
+{% block content %}
+<form method="post" novalidate>
+    <div class="campo">
+        <label for="nome">Nome do fornecedor</label>
+        <input type="text" id="nome" name="nome" required>
+    </div>
+
+    <div class="campo">
+        <label for="contato">Nome do contato</label>
+        <input type="text" id="contato" name="contato" required>
+    </div>
+
+    <div class="campo">
+        <label for="telefone">Telefone</label>
+        <input type="text" id="telefone" name="telefone" placeholder="(11) 99999-9999">
+    </div>
+
+    <div class="campo">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email">
+    </div>
+
+    <div class="campo">
+        <label for="cnpj">CNPJ</label>
+        <input type="text" id="cnpj" name="cnpj">
+    </div>
+
+    <div class="campo">
+        <label for="observacao">Observações</label>
+        <textarea id="observacao" name="observacao" rows="4"></textarea>
+    </div>
+
+    <button type="submit" class="botao-primario">Cadastrar</button>
+</form>
+{% endblock %}

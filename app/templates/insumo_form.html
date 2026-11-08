@@ -11,6 +11,16 @@
     </div>
 
     <div class="campo">
+        <label for="fornecedor_id">Fornecedor principal</label>
+        <select id="fornecedor_id" name="fornecedor_id">
+            <option value="">Sem fornecedor</option>
+            {% for fornecedor in fornecedores %}
+            <option value="{{ fornecedor.id }}">{{ fornecedor.nome }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="campo">
         <label for="unidade">Unidade</label>
         <select id="unidade" name="unidade">
             <option value="kg">kg</option>

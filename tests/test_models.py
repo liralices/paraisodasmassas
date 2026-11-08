@@ -1,6 +1,6 @@
 import pytest
 from app import create_app, db
-from app.models import Produto, Venda, Insumo, Cliente, FechamentoCaixa, FichaTecnica, Usuario
+from app.models import Produto, Venda, Insumo, Cliente, FechamentoCaixa, FichaTecnica, Usuario, Fornecedor
 
 
 @pytest.fixture
@@ -93,3 +93,29 @@ def test_usuario_cria_hash_e_valida_senha(app):
     assert usuario.senha_hash != "padoc123"
     assert usuario.check_senha("padoc123") is True
     assert usuario.check_senha("errada") is False
+
+
+def test_usuario_super_admin_e_reconhecido_como_admin(app):
+    usuario = Usuario(nome="Ana", email="ana@padoc.com", cargo="Super administrador", senha="padoc123")
+
+    assert usuario.is_admin is True
+    assert usuario.is_super_admin is True
+
+
+def test_produto_com_codigo_de_barras_e_fornecedor(app):
+    fornecedor = Fornecedor(nome="Distribuidora Nova", contato="Carlos", telefone="(11) 3333-4444", email="carlos@nova.com")
+    produto = Produto(nome="Refrigerante 600ml", categoria="bebida", preco=7.5, codigo_barras="7891234567890", tipo_estoque="venda_direta", fornecedor=fornecedor, estoque_atual=30, estoque_minimo=10)
+
+    assert produto.codigo_barras == "7891234567890"
+    assert produto.tipo_estoque == "venda_direta"
+    assert produto.estoque_baixo is False
+    assert produto.fornecedor.nome == "Distribuidora Nova"
+
+
+def test_fornecedor_exibe_contatos_e_itens_baixos(app):
+    fornecedor = Fornecedor(nome="Matriz Alimentos", contato="Laura", telefone="(19) 99888-7766", email="laura@matriz.com")
+    insumo = Insumo(nome="Leite", unidade="l", quantidade_atual=4, quantidade_minima=8, fornecedor=fornecedor)
+
+    assert insumo.fornecedor.nome == "Matriz Alimentos"
+    assert insumo.estoque_baixo is True
+    assert "Laura" in fornecedor.contato

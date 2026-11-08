@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from app import db
-from app.models import Produto, Venda, Insumo, FechamentoCaixa
+from app.models import Produto, Venda, Insumo, FechamentoCaixa, Fornecedor
 
 vendas_bp = Blueprint("vendas", __name__)
 
@@ -30,17 +30,24 @@ def listar_produtos():
 @vendas_bp.route("/produtos/novo", methods=["GET", "POST"])
 @login_required
 def novo_produto():
+    fornecedores = Fornecedor.query.order_by(Fornecedor.nome).all()
     if request.method == "POST":
         produto = Produto(
             nome=request.form["nome"],
             categoria=request.form.get("categoria"),
             preco=request.form["preco"],
+            codigo_barras=request.form.get("codigo_barras") or None,
+            tipo_estoque=request.form.get("tipo_estoque", "producao"),
+            unidade=request.form.get("unidade", "un"),
+            estoque_atual=request.form.get("estoque_atual", 0),
+            estoque_minimo=request.form.get("estoque_minimo", 0),
+            fornecedor_id=request.form.get("fornecedor_id") or None,
         )
         db.session.add(produto)
         db.session.commit()
         flash("Produto cadastrado com sucesso.")
         return redirect(url_for("vendas.listar_produtos"))
-    return render_template("produto_form.html")
+    return render_template("produto_form.html", fornecedores=fornecedores, tipo_estoque="producao")
 
 
 @vendas_bp.route("/vendas", methods=["GET", "POST"])
