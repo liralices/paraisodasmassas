@@ -1,5 +1,6 @@
 from datetime import date
 from flask import Blueprint, jsonify
+from flask_login import login_required
 from app import db
 from app.models import Venda, Insumo, Produto
 from sqlalchemy import func
@@ -8,6 +9,7 @@ api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 
 @api_bp.route("/vendas-hoje")
+@login_required
 def vendas_hoje():
     """Todas as vendas registradas hoje, usadas pelo dashboard."""
     hoje = date.today()
@@ -16,6 +18,7 @@ def vendas_hoje():
 
 
 @api_bp.route("/produto-mais-vendido")
+@login_required
 def produto_mais_vendido():
     """Ranking de produtos por quantidade vendida (histórico completo)."""
     resultado = (
@@ -32,6 +35,7 @@ def produto_mais_vendido():
 
 
 @api_bp.route("/faturamento-por-dia")
+@login_required
 def faturamento_por_dia():
     """Faturamento agregado por dia, para o gráfico de tendência."""
     vendas = Venda.query.all()
@@ -44,6 +48,7 @@ def faturamento_por_dia():
 
 
 @api_bp.route("/estoque-baixo")
+@login_required
 def estoque_baixo():
     """Insumos com quantidade igual ou abaixo do mínimo — usado para alertas em JS."""
     insumos = Insumo.query.all()

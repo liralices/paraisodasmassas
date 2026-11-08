@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required
 from app import db
 from app.models import Produto, Venda, Insumo, FechamentoCaixa
 
@@ -6,6 +7,7 @@ vendas_bp = Blueprint("vendas", __name__)
 
 
 @vendas_bp.route("/")
+@login_required
 def index():
     produtos = Produto.query.order_by(Produto.nome).all()
     caixa_aberto = FechamentoCaixa.query.filter_by(data_fechamento=None).first()
@@ -19,12 +21,14 @@ def index():
 
 
 @vendas_bp.route("/produtos")
+@login_required
 def listar_produtos():
     produtos = Produto.query.order_by(Produto.nome).all()
     return render_template("produtos.html", produtos=produtos)
 
 
 @vendas_bp.route("/produtos/novo", methods=["GET", "POST"])
+@login_required
 def novo_produto():
     if request.method == "POST":
         produto = Produto(
@@ -40,6 +44,7 @@ def novo_produto():
 
 
 @vendas_bp.route("/vendas", methods=["GET", "POST"])
+@login_required
 def registrar_venda():
     if request.method == "POST":
         venda = Venda(

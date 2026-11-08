@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required
 from app import db
 from app.models import Cliente
 
@@ -6,6 +7,7 @@ clientes_bp = Blueprint("clientes", __name__)
 
 
 @clientes_bp.route("/clientes")
+@login_required
 def listar_clientes():
     busca = request.args.get("busca", "").strip()
     query = Cliente.query
@@ -16,6 +18,7 @@ def listar_clientes():
 
 
 @clientes_bp.route("/clientes/novo", methods=["GET", "POST"])
+@login_required
 def novo_cliente():
     if request.method == "POST":
         cliente = Cliente(

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Funcionários{% endblock %}
+{% block trilha %}PADOC / Funcionários{% endblock %}
+{% block titulo_pagina %}Funcionários{% endblock %}
+
+{% block content %}
+<div class="barra-acoes">
+    <a class="botao botao-primario" href="{{ url_for('usuarios.novo_usuario') }}">Novo funcionário</a>
+</div>
+
+{% if usuarios %}
+<div class="tabela-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Cargo</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr>
+                <td>{{ usuario.nome }}</td>
+                <td>{{ usuario.email }}</td>
+                <td>{{ usuario.cargo }}</td>
+                <td>
+                    {% if usuario.id != current_user.id %}
+                    <form method="post" action="{{ url_for('usuarios.remover_usuario', usuario_id=usuario.id) }}" onsubmit="return confirm('Deseja remover este funcionário?');">
+                        <button type="submit" class="botao-secundario">Remover</button>
+                    </form>
+                    {% else %}
+                    <span class="badge badge-aberto">Você</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="vazio">Nenhum funcionário cadastrado.</p>
+{% endif %}
+{% endblock %}

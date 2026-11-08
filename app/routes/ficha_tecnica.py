@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required
 from app import db
 from app.models import Produto, Insumo, FichaTecnica
 
@@ -6,6 +7,7 @@ ficha_bp = Blueprint("ficha", __name__)
 
 
 @ficha_bp.route("/ficha-tecnica")
+@login_required
 def listar_fichas():
     produtos = Produto.query.order_by(Produto.nome).all()
     insumos = Insumo.query.order_by(Insumo.nome).all()
@@ -13,6 +15,7 @@ def listar_fichas():
 
 
 @ficha_bp.route("/ficha-tecnica/<int:produto_id>/adicionar", methods=["POST"])
+@login_required
 def adicionar_item(produto_id):
     item = FichaTecnica(
         produto_id=produto_id,
@@ -26,6 +29,7 @@ def adicionar_item(produto_id):
 
 
 @ficha_bp.route("/ficha-tecnica/item/<int:item_id>/remover", methods=["POST"])
+@login_required
 def remover_item(item_id):
     item = FichaTecnica.query.get_or_404(item_id)
     db.session.delete(item)

@@ -1,8 +1,7 @@
-# Giro
+# PADOC
 
-Sistema web de gestão diária para a padaria **Paraíso das Massas** — vendas,
-estoque de insumos, ficha técnica, fechamento de caixa e um dashboard de
-indicadores.
+Sistema web de gestão para padarias — vendas, estoque de insumos, ficha técnica,
+fechamento de caixa, dashboard de indicadores e autenticação de usuários.
 
 Projeto Integrador em Computação II (PJI240) — Univesp.
 
@@ -27,7 +26,7 @@ Como parte do levantamento bibliográfico, o site
 foi usado como referência de mercado. Da lista de funcionalidades da Hiper,
 o que entrou no escopo do Giro:
 
-| Funcionalidade (Hiper) | No Giro | Status |
+| Funcionalidade (Hiper) | No PADOC | Status |
 |---|---|---|
 | Gestão de Vendas | Registro de vendas por produto | ✅ Implementado |
 | Cadastro de clientes | Tela de Clientes (nome, telefone, localidade, CPF/CNPJ) | ✅ Implementado |

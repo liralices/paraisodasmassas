@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Permissões{% endblock %}
+{% block trilha %}PADOC / Permissões{% endblock %}
+{% block titulo_pagina %}Administração de permissões{% endblock %}
+
+{% block content %}
+<div class="barra-acoes">
+    <a class="botao botao-primario" href="{{ url_for('usuarios.listar_usuarios') }}">Gerenciar funcionários</a>
+</div>
+
+<div class="card">
+    <h3>Permissões por usuário</h3>
+    <p>Defina quem pode acessar áreas administrativas do PADOC e quem atua apenas no atendimento.</p>
+</div>
+
+{% if usuarios %}
+<div class="tabela-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Funcionário</th>
+                <th>Email</th>
+                <th>Cargo atual</th>
+                <th>Permissão</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+            <tr>
+                <td>{{ usuario.nome }}</td>
+                <td>{{ usuario.email }}</td>
+                <td>
+                    {% if usuario.is_admin %}
+                        <span class="badge badge-aberto">Administrador</span>
+                    {% else %}
+                        <span class="badge badge-fechado">Atendente</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if usuario.id == current_user.id %}
+                        <span class="badge badge-aberto">Seu perfil</span>
+                    {% else %}
+                    <form method="post" action="{{ url_for('usuarios.atualizar_permissao', usuario_id=usuario.id) }}" class="inline-form">
+                        <select name="cargo">
+                            <option value="Atendente" {% if usuario.cargo == 'Atendente' %}selected{% endif %}>Atendente</option>
+                            <option value="Administrador" {% if usuario.is_admin %}selected{% endif %}>Administrador</option>
+                        </select>
+                        <button type="submit" class="botao-secundario">Salvar</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="vazio">Nenhum funcionário cadastrado.</p>
+{% endif %}
+{% endblock %}

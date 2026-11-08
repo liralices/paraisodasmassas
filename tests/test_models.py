@@ -1,6 +1,6 @@
 import pytest
 from app import create_app, db
-from app.models import Produto, Venda, Insumo, Cliente, FechamentoCaixa, FichaTecnica
+from app.models import Produto, Venda, Insumo, Cliente, FechamentoCaixa, FichaTecnica, Usuario
 
 
 @pytest.fixture
@@ -84,3 +84,12 @@ def test_ficha_tecnica_vincula_insumo_a_produto(app):
     db.session.commit()
 
     assert produto.ficha_tecnica[0].insumo.nome == "Farinha"
+
+
+def test_usuario_cria_hash_e_valida_senha(app):
+    usuario = Usuario(nome="Maria", email="maria@padoc.com", senha="padoc123")
+
+    assert usuario.email == "maria@padoc.com"
+    assert usuario.senha_hash != "padoc123"
+    assert usuario.check_senha("padoc123") is True
+    assert usuario.check_senha("errada") is False
