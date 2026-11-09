@@ -19,13 +19,6 @@ O design foi construído a partir do logo da Paraíso das Massas:
   de gestão como o Hiper, usada como referência de usabilidade para o
   segmento de padaria.
 
-## Funcionalidades — mapeadas a partir do sistema Hiper para padarias
-
-Como parte do levantamento bibliográfico, o site
-[hiper.com.br/solucoes-para-voce/padaria](https://hiper.com.br/solucoes-para-voce/padaria/)
-foi usado como referência de mercado. Da lista de funcionalidades da Hiper,
-o que entrou no escopo do Giro:
-
 | Funcionalidade (Hiper) | No PADOC | Status |
 |---|---|---|
 | Gestão de Vendas | Registro de vendas por produto | ✅ Implementado |
